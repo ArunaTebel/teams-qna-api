@@ -10,6 +10,8 @@ django = "*"
 djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
+coreapi = "*"
+django-oauth-toolkit = "*"
 
 [requires]
 python_version = "3.7"
