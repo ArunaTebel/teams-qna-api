@@ -12,6 +12,8 @@ markdown = "*"
 django-filter = "*"
 coreapi = "*"
 django-oauth-toolkit = "*"
+oauth2-provider = "*"
+django-cors-middleware = "*"
 
 [requires]
 python_version = "3.7"
