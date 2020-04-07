@@ -1,13 +1,13 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
 from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer
 from qnaapi.utils.answer_util import get_answer_comments
 from qnaapi.utils.question_util import get_question_answers, get_question_comments
 from qnaapi.utils.team_util import get_user_teams, get_team_questions
+from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
 
 class TeamViewSet(ModelViewSet):
@@ -41,7 +41,7 @@ class TeamViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class QuestionViewSet(ModelViewSet):
+class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
@@ -73,7 +73,7 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
 
 
-class AnswerViewSet(ModelViewSet):
+class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
 
@@ -89,11 +89,14 @@ class AnswerViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class QuestionCommentViewSet(ModelViewSet):
+class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = QuestionComment.objects.all()
     serializer_class = QuestionCommentSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
 
-class AnswerCommentViewSet(ModelViewSet):
+
+class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = AnswerComment.objects.all()
     serializer_class = AnswerCommentSerializer
