@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from qnaapi.models import Team, Tag, Question, Answer, QuestionComment, AnswerComment, ArchTeamsQnaUser
+from qnaapi.serializer_mixins import ArchTeamsQnAModelPermissionsSerializerMixin
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -39,13 +40,20 @@ class AnswerSerializer(serializers.ModelSerializer):
         fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', ]
 
 
-class QuestionCommentSerializer(serializers.ModelSerializer):
+class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
     question = QuestionSerializer(read_only=True)
 
+    def _can_update(self, obj):
+        return self._is_current_arch_user_obj_owner(obj)
+
+    def _can_delete(self, obj):
+        return self._is_current_arch_user_obj_owner(obj)
+
     class Meta:
         model = QuestionComment
-        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', ]
+        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
+                  'can_read', 'can_create', 'can_update', 'can_delete']
 
 
 class AnswerCommentSerializer(serializers.ModelSerializer):

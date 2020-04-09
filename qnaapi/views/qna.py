@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -64,7 +65,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = QuestionCommentSerializer(get_question_comments(pk), many=True)
+        serializer = QuestionCommentSerializer(get_question_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -95,6 +96,12 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object())
+        if serializer.data['can_update']:
+            return super(QuestionCommentViewSet, self).update(request, args, kwargs)
+        raise PermissionDenied()
 
 
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
