@@ -17,6 +17,7 @@ django-cors-middleware = "*"
 requests = "*"
 psycopg2 = "*"
 gunicorn = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.7"
