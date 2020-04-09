@@ -15,6 +15,7 @@ django-oauth-toolkit = "*"
 oauth2-provider = "*"
 django-cors-middleware = "*"
 requests = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"
