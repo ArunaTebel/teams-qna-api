@@ -24,7 +24,10 @@ SECRET_KEY = '%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'arch-teams-qna.herokuapp.com',
+]
 
 # Application definition
 
