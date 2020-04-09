@@ -16,6 +16,7 @@ oauth2-provider = "*"
 django-cors-middleware = "*"
 requests = "*"
 psycopg2 = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
