@@ -7,7 +7,7 @@ from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer
     QuestionCommentSerializer, AnswerCommentSerializer
 from qnaapi.utils.answer_util import get_answer_comments
 from qnaapi.utils.question_util import get_question_answers, get_question_comments
-from qnaapi.utils.team_util import get_user_teams, get_team_questions
+from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
 
@@ -38,7 +38,24 @@ class TeamViewSet(ModelViewSet):
         :param pk:
         :return:
         """
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
+
         serializer = QuestionSerializer(get_team_questions(pk), many=True)
+        return Response(serializer.data)
+
+    @action(detail=True)
+    def tags(self, request, pk):
+        """
+        Returns the list of tags related to the team given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
+
+        serializer = TagSerializer(get_team_tags(pk), many=True)
         return Response(serializer.data)
 
 
