@@ -21,15 +21,16 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class QuestionSerializer(serializers.ModelSerializer):
+class QuestionSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
     team = TeamSerializer()
-    tags = TagSerializer(many=True, read_only=True)
+    tag_details = TagSerializer(many=True, read_only=True, source='tags')
 
     class Meta:
         model = Question
         fields = ['id', 'name', 'sub_title', 'content', 'up_votes', 'down_votes', 'views', 'owner', 'team', 'tags',
-                  'created_at', 'updated_at', 'answer_count']
+                  'tag_details', 'created_at', 'updated_at', 'answer_count', 'can_read', 'can_create', 'can_update',
+                  'can_delete']
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -43,12 +44,6 @@ class AnswerSerializer(serializers.ModelSerializer):
 class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
     question = QuestionSerializer(read_only=True)
-
-    def _can_update(self, obj):
-        return self._is_current_arch_user_obj_owner(obj)
-
-    def _can_delete(self, obj):
-        return self._is_current_arch_user_obj_owner(obj)
 
     class Meta:
         model = QuestionComment

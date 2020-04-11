@@ -28,10 +28,10 @@ class ArchTeamsQnAModelPermissionsSerializerMixin(serializers.ModelSerializer):
         return self._is_authenticated(obj)
 
     def _can_update(self, obj):
-        return self._is_authenticated(obj)
+        return self._is_current_arch_user_obj_owner(obj)
 
     def _can_delete(self, obj):
-        return self._is_authenticated(obj)
+        return self._is_current_arch_user_obj_owner(obj)
 
     class Meta:
         abstract = True

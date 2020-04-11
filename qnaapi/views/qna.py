@@ -85,6 +85,10 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         serializer = QuestionCommentSerializer(get_question_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(QuestionViewSet, self).update(request, *args, **kwargs)
+
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
@@ -115,10 +119,8 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
         serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
 
     def update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object())
-        if serializer.data['can_update']:
-            return super(QuestionCommentViewSet, self).update(request, args, kwargs)
-        raise PermissionDenied()
+        self.restrict_if_obj_not_permitted()
+        return super(QuestionCommentViewSet, self).update(request, *args, **kwargs)
 
 
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
