@@ -22,15 +22,23 @@ class ArchTeamsQnAModelPermissionsSerializerMixin(serializers.ModelSerializer):
         return (self._is_authenticated(obj)) & (getattr(obj, owner_getter).id == self._get_current_arch_user(obj).id)
 
     def _can_read(self, obj):
+        if obj is None:
+            return True
         return self._is_authenticated(obj)
 
     def _can_create(self, obj):
+        if obj is None:
+            return True
         return self._is_authenticated(obj)
 
     def _can_update(self, obj):
+        if obj is None:
+            return True
         return self._is_current_arch_user_obj_owner(obj)
 
     def _can_delete(self, obj):
+        if obj is None:
+            return True
         return self._is_current_arch_user_obj_owner(obj)
 
     class Meta:

@@ -23,7 +23,6 @@ class TagSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
-    team = TeamSerializer()
     tag_details = TagSerializer(many=True, read_only=True, source='tags')
 
     class Meta:

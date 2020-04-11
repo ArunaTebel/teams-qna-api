@@ -85,6 +85,9 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         serializer = QuestionCommentSerializer(get_question_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser)
+
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
         return super(QuestionViewSet, self).update(request, *args, **kwargs)
