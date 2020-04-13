@@ -32,12 +32,13 @@ class QuestionSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializer
                   'can_delete']
 
 
-class AnswerSerializer(serializers.ModelSerializer):
+class AnswerSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
 
     class Meta:
         model = Answer
-        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', ]
+        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
+                  'can_read', 'can_create', 'can_update', 'can_delete']
 
 
 class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
@@ -50,9 +51,10 @@ class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, ser
                   'can_read', 'can_create', 'can_update', 'can_delete']
 
 
-class AnswerCommentSerializer(serializers.ModelSerializer):
+class AnswerCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
     owner = ArchTeamsQnaUserSerializer(read_only=True)
 
     class Meta:
         model = AnswerComment
-        fields = ['id', 'content', 'answer', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', ]
+        fields = ['id', 'content', 'answer', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', 'can_read',
+                  'can_create', 'can_update', 'can_delete']

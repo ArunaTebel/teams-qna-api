@@ -71,7 +71,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = AnswerSerializer(get_question_answers(pk), many=True)
+        serializer = AnswerSerializer(get_question_answers(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True)
@@ -110,8 +110,15 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = AnswerCommentSerializer(get_answer_comments(pk), many=True)
+        serializer = AnswerCommentSerializer(get_answer_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser)
+
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(AnswerViewSet, self).update(request, *args, **kwargs)
 
 
 class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -129,3 +136,10 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = AnswerComment.objects.all()
     serializer_class = AnswerCommentSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser, answer_id=self.request.data['answer'])
+
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(AnswerCommentViewSet, self).update(request, *args, **kwargs)
