@@ -1,0 +1,1 @@
+web: gunicorn arch_teams_qna.wsgi --log-file -
