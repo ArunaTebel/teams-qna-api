@@ -6,6 +6,7 @@ from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerCo
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer
 from qnaapi.utils.answer_util import get_answer_comments
+from qnaapi.utils.commons import paginated_response
 from qnaapi.utils.question_util import get_question_answers, get_question_comments
 from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
@@ -38,11 +39,7 @@ class TeamViewSet(ModelViewSet):
         :param pk:
         :return:
         """
-        if not is_user_in_team(request.user, pk):
-            raise PermissionDenied()
-
-        serializer = QuestionSerializer(get_team_questions(pk), many=True, context={'request': request})
-        return Response(serializer.data)
+        return paginated_response(self, get_team_questions(pk), QuestionSerializer, request)
 
     @action(detail=True)
     def tags(self, request, pk):
@@ -82,8 +79,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = QuestionCommentSerializer(get_question_comments(pk), many=True, context={'request': request})
-        return Response(serializer.data)
+        return paginated_response(self, get_question_comments(pk), QuestionCommentSerializer, request)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser)
@@ -110,8 +106,7 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = AnswerCommentSerializer(get_answer_comments(pk), many=True, context={'request': request})
-        return Response(serializer.data)
+        return paginated_response(self, get_answer_comments(pk), AnswerCommentSerializer, request)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser)
