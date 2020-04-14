@@ -41,7 +41,14 @@ class TeamViewSet(ModelViewSet):
         if not is_user_in_team(request.user, pk):
             raise PermissionDenied()
 
-        serializer = QuestionSerializer(get_team_questions(pk), many=True, context={'request': request})
+        queryset = self.filter_queryset(get_team_questions(pk))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = QuestionSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = QuestionSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True)
