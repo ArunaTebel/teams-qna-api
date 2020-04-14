@@ -7,7 +7,7 @@ from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer
     QuestionCommentSerializer, AnswerCommentSerializer
 from qnaapi.utils.answer_util import get_answer_comments
 from qnaapi.utils.question_util import get_question_answers, get_question_comments
-from qnaapi.utils.team_util import get_user_teams, get_team_questions
+from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
 
@@ -38,7 +38,24 @@ class TeamViewSet(ModelViewSet):
         :param pk:
         :return:
         """
-        serializer = QuestionSerializer(get_team_questions(pk), many=True)
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
+
+        serializer = QuestionSerializer(get_team_questions(pk), many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True)
+    def tags(self, request, pk):
+        """
+        Returns the list of tags related to the team given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
+
+        serializer = TagSerializer(get_team_tags(pk), many=True)
         return Response(serializer.data)
 
 
@@ -54,7 +71,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = AnswerSerializer(get_question_answers(pk), many=True)
+        serializer = AnswerSerializer(get_question_answers(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
     @action(detail=True)
@@ -67,6 +84,13 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         """
         serializer = QuestionCommentSerializer(get_question_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser)
+
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(QuestionViewSet, self).update(request, *args, **kwargs)
 
 
 class TagViewSet(ModelViewSet):
@@ -86,8 +110,15 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
-        serializer = AnswerCommentSerializer(get_answer_comments(pk), many=True)
+        serializer = AnswerCommentSerializer(get_answer_comments(pk), many=True, context={'request': request})
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser)
+
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(AnswerViewSet, self).update(request, *args, **kwargs)
 
 
 class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -98,12 +129,17 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
         serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
 
     def update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object())
-        if serializer.data['can_update']:
-            return super(QuestionCommentViewSet, self).update(request, args, kwargs)
-        raise PermissionDenied()
+        self.restrict_if_obj_not_permitted()
+        return super(QuestionCommentViewSet, self).update(request, *args, **kwargs)
 
 
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = AnswerComment.objects.all()
     serializer_class = AnswerCommentSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.archteamsqnauser, answer_id=self.request.data['answer'])
+
+    def update(self, request, *args, **kwargs):
+        self.restrict_if_obj_not_permitted()
+        return super(AnswerCommentViewSet, self).update(request, *args, **kwargs)
