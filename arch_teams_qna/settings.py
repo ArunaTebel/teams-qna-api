@@ -149,6 +149,10 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 315360000
+}
+
 AUTHENTICATION_BACKENDS = (
     'oauth2_provider.backends.OAuth2Backend',
     'django.contrib.auth.backends.ModelBackend',
@@ -157,4 +161,3 @@ AUTHENTICATION_BACKENDS = (
 # Uncomment below lines in Heroku env.
 # import dj_database_url
 # DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-
