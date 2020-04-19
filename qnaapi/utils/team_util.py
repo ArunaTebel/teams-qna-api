@@ -19,8 +19,8 @@ def get_user_teams(user):
         return user.archteamsqnauser.teams.all()
 
 
-def get_team_questions(team_id):
-    return Question.objects.filter(team=team_id)
+def get_team_questions(team_id, order_by='-created_at'):
+    return Question.objects.filter(team=team_id).order_by(order_by)
 
 
 def get_team_tags(team_id):

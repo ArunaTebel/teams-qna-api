@@ -30,6 +30,7 @@ class QuestionSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializer
         fields = ['id', 'name', 'sub_title', 'content', 'up_votes', 'down_votes', 'views', 'owner', 'team', 'tags',
                   'tag_details', 'created_at', 'updated_at', 'answer_count', 'can_read', 'can_create', 'can_update',
                   'can_delete']
+        ordering = 'id'
 
 
 class AnswerSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
