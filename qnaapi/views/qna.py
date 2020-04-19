@@ -39,7 +39,11 @@ class TeamViewSet(ModelViewSet):
         :param pk:
         :return:
         """
-        return paginated_response(self, get_team_questions(pk), QuestionSerializer, request)
+        team_questions = get_team_questions(pk, request.query_params)
+        data = paginated_response(self, team_questions['filtered_answers'], QuestionSerializer, request).data
+        data['metadata'] = {'unanswered_count': team_questions['unanswered_count']}
+        return Response(data=data)
+        # return paginated_response(self, get_team_questions(pk, request.query_params), QuestionSerializer, request)
 
     @action(detail=True)
     def tags(self, request, pk):
