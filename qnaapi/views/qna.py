@@ -84,6 +84,36 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         """
         return paginated_response(self, get_question_comments(pk), QuestionCommentSerializer, request)
 
+    @action(detail=True, methods=['post'])
+    def upview(self, request, pk):
+        """
+        Increment the views of the question given by the pk by 1
+        :param request:
+        :param pk:
+        :return:
+        """
+        return super(QuestionViewSet, self).retrieve(request)
+
+    @action(detail=True, methods=['post'])
+    def upvote(self, request, pk):
+        """
+        Up votes the question given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        return super(QuestionViewSet, self).retrieve(request)
+
+    @action(detail=True, methods=['post'])
+    def downvote(self, request, pk):
+        """
+        Down votes the question given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        return super(QuestionViewSet, self).retrieve(request)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser)
 
