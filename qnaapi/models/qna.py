@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from qnaapi.utils.vote_utils import VOTE_TYPES, UP, DOWN
 
 
 class Team(models.Model):
@@ -46,6 +47,8 @@ class Question(models.Model):
     owner = models.ForeignKey(ArchTeamsQnaUser, on_delete=models.SET_NULL, null=True, blank=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag)
+    accepted_answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True,
+                                        related_name='accepted_for_question')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -59,28 +62,26 @@ class Question(models.Model):
         return self.questionview_set.count()
 
     def up_votes(self):
-        return self.questionvote_set.filter(vote_type=QuestionVote.UP).count()
+        return self.questionvote_set.filter(vote_type=UP).count()
 
     def down_votes(self):
-        return self.questionvote_set.filter(vote_type=QuestionVote.DOWN).count()
+        return self.questionvote_set.filter(vote_type=DOWN).count()
 
 
 class QuestionView(models.Model):
     viewer = models.ForeignKey(ArchTeamsQnaUser, on_delete=models.SET_NULL, null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.question.name + ' viewed by ' + self.viewer.full_name
 
 
 class QuestionVote(models.Model):
-    UP = 'up'
-    DOWN = 'down'
-    VOTE_TYPES = [(UP, 'Up Voted'), (DOWN, 'Down Voted')]
-
     voter = models.ForeignKey(ArchTeamsQnaUser, on_delete=models.SET_NULL, null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     vote_type = models.CharField(max_length=4, choices=VOTE_TYPES, default=UP)
+    voted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.question.name + ' ' + self.vote_type + ' voted by ' + self.voter.full_name
@@ -101,18 +102,21 @@ class Comment(models.Model):
 class Answer(Comment):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
+    def up_votes(self):
+        return self.answervote_set.filter(vote_type=UP).count()
+
+    def down_votes(self):
+        return self.answervote_set.filter(vote_type=DOWN).count()
+
     def __str__(self):
-        return self.content
+        return (self.content[:50] + '..') if len(self.content) > 50 else self.content
 
 
 class AnswerVote(models.Model):
-    UP = 'up'
-    DOWN = 'down'
-    VOTE_TYPES = [(UP, 'Up Voted'), (DOWN, 'Down Voted')]
-
     voter = models.ForeignKey(ArchTeamsQnaUser, on_delete=models.SET_NULL, null=True, blank=True)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     vote_type = models.CharField(max_length=4, choices=VOTE_TYPES, default=UP)
+    voted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.answer.id) + ' ' + self.vote_type + ' voted by ' + self.voter.full_name

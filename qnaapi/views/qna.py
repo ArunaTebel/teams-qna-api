@@ -2,12 +2,13 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment
+from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
-    QuestionCommentSerializer, AnswerCommentSerializer
+    QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
+from qnaapi.utils import vote_utils
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
-from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible
+from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview
 from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
@@ -100,6 +101,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         """
         if not is_question_accessible(request.user, pk):
             raise PermissionDenied()
+        upview(pk, self.request.user.archteamsqnauser.id)
         return super(QuestionViewSet, self).retrieve(request)
 
     @action(detail=True, methods=['post'])
@@ -112,6 +114,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         """
         if not is_question_accessible(request.user, pk):
             raise PermissionDenied()
+        vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.UP, QuestionVote, QuestionVoteSerializer)
         return super(QuestionViewSet, self).retrieve(request)
 
     @action(detail=True, methods=['post'])
@@ -124,6 +127,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         """
         if not is_question_accessible(request.user, pk):
             raise PermissionDenied()
+        vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.DOWN, QuestionVote,
+                        QuestionVoteSerializer)
         return super(QuestionViewSet, self).retrieve(request)
 
     def create(self, request, *args, **kwargs):
@@ -159,6 +164,32 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         if not is_answer_accessible(request.user, pk):
             raise PermissionDenied()
         return paginated_response(self, get_answer_comments(pk), AnswerCommentSerializer, request)
+
+    @action(detail=True, methods=['post'])
+    def upvote(self, request, pk):
+        """
+        Up votes the answer given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_answer_accessible(request.user, pk):
+            raise PermissionDenied()
+        vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.UP, AnswerVote, AnswerVoteSerializer)
+        return super(AnswerViewSet, self).retrieve(request)
+
+    @action(detail=True, methods=['post'])
+    def downvote(self, request, pk):
+        """
+        Down votes the answer given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_answer_accessible(request.user, pk):
+            raise PermissionDenied()
+        vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.DOWN, AnswerVote, AnswerVoteSerializer)
+        return super(AnswerViewSet, self).retrieve(request)
 
     def create(self, request, *args, **kwargs):
         if not is_question_accessible(request.user, request.data['question']):

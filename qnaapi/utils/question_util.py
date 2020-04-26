@@ -1,4 +1,5 @@
-from qnaapi.models import Answer, QuestionComment, Question
+from qnaapi.models import Answer, QuestionComment, Question, QuestionVote
+from qnaapi.serializers import QuestionViewSerializer, QuestionVoteSerializer
 from qnaapi.utils.team_util import is_user_in_team
 
 
@@ -21,3 +22,9 @@ def is_question_accessible(user, question_id):
     """
     team_id = Question.objects.get(pk=question_id).team_id
     return is_user_in_team(user, team_id)
+
+
+def upview(question_id, user_id):
+    serializer = QuestionViewSerializer(data={'question': question_id, 'viewer': user_id})
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
