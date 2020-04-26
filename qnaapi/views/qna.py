@@ -1,11 +1,12 @@
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
-from qnaapi.utils import vote_utils
+from qnaapi.utils import vote_utils, answer_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
 from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview
@@ -189,6 +190,21 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         if not is_answer_accessible(request.user, pk):
             raise PermissionDenied()
         vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.DOWN, AnswerVote, AnswerVoteSerializer)
+        return super(AnswerViewSet, self).retrieve(request)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk):
+        """
+        Accepts the answer given by the pk as the correct answer for its question
+        :param request:
+        :param pk:
+        :return:
+        """
+        answer = self.get_object()
+        question = get_object_or_404(Question, pk=answer.question_id)
+        if not is_answer_accessible(request.user, pk) or question.owner_id != self.request.user.archteamsqnauser.id:
+            raise PermissionDenied()
+        answer_util.accept(question, int(pk))
         return super(AnswerViewSet, self).retrieve(request)
 
     def create(self, request, *args, **kwargs):

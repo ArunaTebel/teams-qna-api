@@ -1,4 +1,5 @@
 from qnaapi.models import AnswerComment, Answer
+from qnaapi.serializers import QuestionSerializer
 from qnaapi.utils.question_util import is_question_accessible
 
 
@@ -18,3 +19,12 @@ def is_answer_accessible(user, answer_id):
     """
     question_id = Answer.objects.get(pk=answer_id).question_id
     return is_question_accessible(user, question_id)
+
+
+def accept(question, answer_id):
+    accepted_answer = answer_id
+    if question.accepted_answer_id == answer_id:
+        accepted_answer = None
+    serializer = QuestionSerializer(data={'accepted_answer': accepted_answer}, instance=question, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()

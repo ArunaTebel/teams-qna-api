@@ -41,8 +41,8 @@ class QuestionSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializer
     class Meta:
         model = Question
         fields = ['id', 'name', 'sub_title', 'content', 'up_votes', 'down_votes', 'views', 'owner', 'team', 'tags',
-                  'tag_details', 'current_user_vote_type', 'created_at', 'updated_at', 'answer_count', 'can_read',
-                  'can_create', 'can_update', 'can_delete']
+                  'accepted_answer', 'tag_details', 'current_user_vote_type', 'created_at', 'updated_at',
+                  'answer_count', 'can_read', 'can_create', 'can_update', 'can_delete', 'is_owner']
         ordering = 'id'
 
 
@@ -64,7 +64,7 @@ class AnswerSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.
     class Meta:
         model = Answer
         fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
-                  'current_user_vote_type', 'can_read', 'can_create', 'can_update', 'can_delete']
+                  'current_user_vote_type', 'can_read', 'can_create', 'can_update', 'can_delete', 'is_owner']
 
 
 class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
@@ -74,7 +74,7 @@ class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, ser
     class Meta:
         model = QuestionComment
         fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
-                  'can_read', 'can_create', 'can_update', 'can_delete']
+                  'can_read', 'can_create', 'can_update', 'can_delete', 'is_owner']
 
 
 class AnswerCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
@@ -83,7 +83,7 @@ class AnswerCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, seria
     class Meta:
         model = AnswerComment
         fields = ['id', 'content', 'answer', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', 'can_read',
-                  'can_create', 'can_update', 'can_delete']
+                  'can_create', 'can_update', 'can_delete', 'is_owner']
 
 
 class QuestionViewSerializer(serializers.ModelSerializer):
