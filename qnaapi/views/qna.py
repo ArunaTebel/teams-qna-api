@@ -5,9 +5,9 @@ from rest_framework.viewsets import ModelViewSet
 from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer
-from qnaapi.utils.answer_util import get_answer_comments
+from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
-from qnaapi.utils.question_util import get_question_answers, get_question_comments
+from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible
 from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
@@ -39,6 +39,8 @@ class TeamViewSet(ModelViewSet):
         :param pk:
         :return:
         """
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
         team_questions = get_team_questions(pk, request.query_params)
         data = paginated_response(self, team_questions['filtered_answers'], QuestionSerializer, request).data
         data['metadata'] = {'unanswered_count': team_questions['unanswered_count']}
@@ -71,6 +73,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
         serializer = AnswerSerializer(get_question_answers(pk), many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -82,6 +86,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
         return paginated_response(self, get_question_comments(pk), QuestionCommentSerializer, request)
 
     @action(detail=True, methods=['post'])
@@ -92,6 +98,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
         return super(QuestionViewSet, self).retrieve(request)
 
     @action(detail=True, methods=['post'])
@@ -102,6 +110,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
         return super(QuestionViewSet, self).retrieve(request)
 
     @action(detail=True, methods=['post'])
@@ -112,7 +122,14 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
         return super(QuestionViewSet, self).retrieve(request)
+
+    def create(self, request, *args, **kwargs):
+        if not is_user_in_team(request.user, request.data['team']):
+            raise PermissionDenied()
+        return super(QuestionViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser)
@@ -139,7 +156,14 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         :param pk:
         :return:
         """
+        if not is_answer_accessible(request.user, pk):
+            raise PermissionDenied()
         return paginated_response(self, get_answer_comments(pk), AnswerCommentSerializer, request)
+
+    def create(self, request, *args, **kwargs):
+        if not is_question_accessible(request.user, request.data['question']):
+            raise PermissionDenied()
+        return super(AnswerViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser)
@@ -153,6 +177,11 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = QuestionComment.objects.all()
     serializer_class = QuestionCommentSerializer
 
+    def create(self, request, *args, **kwargs):
+        if not is_question_accessible(request.user, request.data['question']):
+            raise PermissionDenied()
+        return super(QuestionCommentViewSet, self).create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
 
@@ -164,6 +193,11 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = AnswerComment.objects.all()
     serializer_class = AnswerCommentSerializer
+
+    def create(self, request, *args, **kwargs):
+        if not is_answer_accessible(request.user, request.data['answer']):
+            raise PermissionDenied()
+        return super(AnswerCommentViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.archteamsqnauser, answer_id=self.request.data['answer'])
