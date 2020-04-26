@@ -6,6 +6,7 @@ class ArchTeamsQnAModelPermissionsSerializerMixin(serializers.ModelSerializer):
     can_create = serializers.SerializerMethodField('_can_create')
     can_update = serializers.SerializerMethodField('_can_update')
     can_delete = serializers.SerializerMethodField('_can_delete')
+    is_owner = serializers.SerializerMethodField('_is_current_arch_user_obj_owner')
 
     def _is_authenticated(self, obj):
         return ('request' in self.context) & hasattr(self.context['request'], 'user')
