@@ -13,7 +13,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class ArchTeamsQnaUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArchTeamsQnaUser
-        fields = '__all__'
+        fields = ['id', 'full_name', 'avatar', 'created_at', 'updated_at', 'user', 'teams', 'rating']
 
 
 class TagSerializer(serializers.ModelSerializer):

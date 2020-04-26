@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Sum
+
 from qnaapi.utils.vote_utils import VOTE_TYPES, UP, DOWN
 
 
@@ -22,12 +24,20 @@ class ArchTeamsQnaUser(models.Model):
     teams = models.ManyToManyField(Team)
     full_name = models.CharField(max_length=250, blank=False, null=False)
     avatar = models.CharField(max_length=50, blank=True, null=True)
-    rating = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.full_name + ' [user: ' + self.user.username + ']'
+
+    def rating(self):
+        question_up_votes = self.question_set.filter(questionvote__vote_type=UP).count()
+        answer_up_votes = self.answer_set.filter(answervote__vote_type=UP).count()
+        question_down_votes = self.question_set.filter(questionvote__vote_type=DOWN).count()
+        answer_down_votes = self.answer_set.filter(answervote__vote_type=DOWN).count()
+        accepted_answers = Question.objects.filter(accepted_answer__owner_id=self.id).count()
+        return (question_up_votes * 15 + answer_up_votes * 5 + accepted_answers * 20) - (
+                question_down_votes * 10 + answer_down_votes * 3)
 
 
 class Tag(models.Model):
