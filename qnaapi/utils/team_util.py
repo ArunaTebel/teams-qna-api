@@ -44,3 +44,12 @@ def get_team_questions(team_id, filter_params, order_by='-created_at'):
 
 def get_team_tags(team_id):
     return Tag.objects.filter(team=team_id)
+
+
+def get_team_activity_logs(team_id):
+    """
+    Returns the Activity Logs applicable for the given team
+    :param team_id:
+    :return:
+    """
+    return Tag.objects.filter(team=team_id)

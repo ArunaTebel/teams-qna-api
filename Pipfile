@@ -19,6 +19,7 @@ psycopg2 = "*"
 gunicorn = "*"
 whitenoise = "*"
 dj-database-url = "*"
+django-papertrail = "*"
 
 [requires]
 python_version = "3.7"

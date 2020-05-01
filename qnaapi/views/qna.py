@@ -1,16 +1,21 @@
 from django.core.exceptions import PermissionDenied
+from django.db.models.signals import ModelSignal
 from django.shortcuts import get_object_or_404
+from papertrail.models import Entry
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
+from qnaapi.signals.qna import post_question_create, post_question_update, post_question_down_vote, \
+    post_question_up_vote
 from qnaapi.utils import vote_utils, answer_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
 from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview
-from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags
+from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags, \
+    get_team_activity_logs
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
 
 
@@ -61,6 +66,18 @@ class TeamViewSet(ModelViewSet):
 
         serializer = TagSerializer(get_team_tags(pk), many=True)
         return Response(serializer.data)
+
+    @action(detail=True, url_path='activity-logs')
+    def activity_logs(self, request, pk):
+        """
+        Returns the list of activity logs related to the team given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_user_in_team(request.user, pk):
+            raise PermissionDenied()
+        return paginated_response(self, get_team_activity_logs(pk), TagSerializer, request)
 
 
 class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -138,11 +155,18 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         return super(QuestionViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.archteamsqnauser)
+        question = serializer.save(owner=self.request.user.archteamsqnauser)
+        if question:
+            post_question_create.send(sender=self.__class__, instance=question, user=self.request.user.archteamsqnauser)
 
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
         return super(QuestionViewSet, self).update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        question = serializer.save()
+        if question:
+            post_question_update.send(sender=self.__class__, instance=question, user=self.request.user.archteamsqnauser)
 
 
 class TagViewSet(ModelViewSet):
