@@ -1,3 +1,4 @@
+from papertrail.models import Entry
 from rest_framework import serializers
 from qnaapi.models import Team, Tag, Question, Answer, QuestionComment, AnswerComment, ArchTeamsQnaUser, QuestionView, \
     QuestionVote, AnswerVote
@@ -101,4 +102,10 @@ class QuestionVoteSerializer(serializers.ModelSerializer):
 class AnswerVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnswerVote
+        fields = '__all__'
+
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
         fields = '__all__'

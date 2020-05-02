@@ -43,28 +43,6 @@ class QuestionLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
     def post_answer_unaccepted(instance, **kwargs):
         QuestionLogSignalReceiver.process(events.EVENTS['UNACCEPTED_ANSWER'], instance, **kwargs)
 
-    def get_message_for_subscriber(self, subscription, subscriber=None):
-        instance = self.get_instance()
-        return self.get_event_subscriptions()[subscription]['MESSAGE'].format(
-            question_name=instance.name,
-            current_user=self.get_current_user_name(),
-            team_name=instance.team.name
-        )
-
-    def get_data_for_subscriber(self, subscription, subscriber=None):
-        instance = self.get_instance()
-        return {
-            'log': {
-                'message': self.get_event_subscriptions()[subscription]['MESSAGE'],
-                'params': {
-                    'question_id': instance.id,
-                    'question_name': instance.name,
-                    'current_user': self.get_current_user_name(),
-                    'team_name': instance.team.name
-                }
-            }
-        }
-
     def get_subscriber_entities_for_subscription(self, subscription):
         subscriber_entities = []
         question = self.get_instance()  # type: Question

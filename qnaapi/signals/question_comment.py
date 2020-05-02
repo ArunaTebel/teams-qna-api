@@ -19,26 +19,8 @@ class QuestionCommentLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
     def post_update(instance, **kwargs):
         QuestionCommentLogSignalReceiver.process(events.EVENTS['UPDATE_QUESTION_COMMENT'], instance, **kwargs)
 
-    def get_message_for_subscriber(self, subscription, subscriber=None):
-        question_comment = self.get_instance()  # type:QuestionComment
-        return self.get_event_subscriptions()[subscription]['MESSAGE'].format(
-            question_name=question_comment.question.name,
-            current_user=self.get_current_user_name(),
-            team_name=question_comment.question.team.name
-        )
-
-    def get_data_for_subscriber(self, subscription, subscriber=None):
-        question_comment = self.get_instance()  # type:QuestionComment
-        return {
-            'log': {
-                'message': self.get_event_subscriptions()[subscription]['MESSAGE'],
-                'params': {
-                    'question_name': question_comment.question.name,
-                    'current_user': self.get_current_user_name(),
-                    'team_name': question_comment.question.team.name
-                }
-            }
-        }
+    def get_question_from_instance(self):
+        return self.get_instance().question
 
     def get_subscriber_entities_for_subscription(self, subscription):
         subscriber_entities = []

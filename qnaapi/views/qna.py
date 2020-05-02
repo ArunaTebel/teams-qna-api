@@ -1,20 +1,19 @@
 from django.core.exceptions import PermissionDenied
-from django.db.models.signals import ModelSignal
 from django.shortcuts import get_object_or_404
-from papertrail.models import Entry
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
-    QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
-from qnaapi.signals.qna import post_question_create, post_question_update, post_question_down_vote, \
-    post_question_up_vote, post_answer_create, post_answer_update, post_question_comment_create, \
-    post_question_comment_update, post_answer_comment_create, post_answer_comment_update
+    QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer, \
+    ActivityLogSerializer
+from qnaapi.signals.qna import post_question_create, post_question_update, post_answer_create, post_answer_update, \
+    post_question_comment_create, post_question_comment_update, post_answer_comment_create, post_answer_comment_update
 from qnaapi.utils import vote_utils, answer_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
-from qnaapi.utils.commons import paginated_response
-from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview
+from qnaapi.utils.commons import paginated_response, limit_offset_paginated_response
+from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview, \
+    get_question_activity_logs
 from qnaapi.utils.team_util import get_user_teams, get_team_questions, is_user_in_team, get_team_tags, \
     get_team_activity_logs
 from qnaapi.view_mixins import ModelWithOwnerLoggedInCreateMixin
@@ -71,14 +70,14 @@ class TeamViewSet(ModelViewSet):
     @action(detail=True, url_path='activity-logs')
     def activity_logs(self, request, pk):
         """
-        Returns the list of activity logs related to the team given by the pk
+        Returns the list of activity logs of the team given by the pk
         :param request:
         :param pk:
         :return:
         """
         if not is_user_in_team(request.user, pk):
             raise PermissionDenied()
-        return paginated_response(self, get_team_activity_logs(pk), TagSerializer, request)
+        return limit_offset_paginated_response(self, get_team_activity_logs(pk), ActivityLogSerializer, request)
 
 
 class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -149,6 +148,18 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         vote_utils.vote(pk, self.request.user.archteamsqnauser.id, vote_utils.DOWN, QuestionVote,
                         QuestionVoteSerializer)
         return super(QuestionViewSet, self).retrieve(request)
+
+    @action(detail=True, url_path='activity-logs')
+    def activity_logs(self, request, pk):
+        """
+        Returns the list of activity logs of the question given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        if not is_question_accessible(request.user, pk):
+            raise PermissionDenied()
+        return limit_offset_paginated_response(self, get_question_activity_logs(pk), ActivityLogSerializer, request)
 
     def create(self, request, *args, **kwargs):
         if not is_user_in_team(request.user, request.data['team']):

@@ -35,28 +35,8 @@ class AnswerLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
     def post_reset_down_vote(instance, **kwargs):
         AnswerLogSignalReceiver.process(events.EVENTS['RESET_DOWN_VOTE_ANSWER'], instance, **kwargs)
 
-    def get_message_for_subscriber(self, subscription, subscriber=None):
-        answer = self.get_instance()
-        return self.get_event_subscriptions()[subscription]['MESSAGE'].format(
-            question_name=answer.question.name,
-            current_user=self.get_current_user_name(),
-            team_name=answer.question.team.name
-        )
-
-    def get_data_for_subscriber(self, subscription, subscriber=None):
-        instance = self.get_instance()  # type:Answer
-        return {
-            'log': {
-                'message': self.get_event_subscriptions()[subscription]['MESSAGE'],
-                'params': {
-                    'answer_id': instance.id,
-                    'question_id': instance.question.id,
-                    'question_name': instance.question.name,
-                    'current_user': self.get_current_user_name(),
-                    'team_name': instance.question.team.name
-                }
-            }
-        }
+    def get_question_from_instance(self):
+        return self.get_instance().question
 
     def get_subscriber_entities_for_subscription(self, subscription):
         subscriber_entities = []

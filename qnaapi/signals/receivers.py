@@ -45,9 +45,6 @@ class TeamsQnAModelLogSignalReceiver:
     def get_event_subscriptions(self):
         return self.get_event()['SUBSCRIPTIONS']
 
-    def get_message_for_subscriber(self, subscription, subscriber=None):
-        return self.get_event_subscriptions()[subscription]
-
     def get_targets_for_subscriber(self, subscription, subscriber=None):
 
         if subscription == events.SUBSCRIPTIONS[events.GLOBAL]:
@@ -56,9 +53,6 @@ class TeamsQnAModelLogSignalReceiver:
             targets = {subscription: subscriber, }
 
         return targets
-
-    def get_data_for_subscriber(self, subscription, subscriber=None):
-        return {}
 
     def get_subscriber_entities_for_subscription(self, subscription):
         return []
@@ -89,6 +83,39 @@ class TeamsQnAModelLogSignalReceiver:
                     targets=self.get_targets_for_subscriber(subscription, subscriber),
                     data=self.get_data_for_subscriber(subscription, subscriber)
                 )
+
+    def get_question_from_instance(self):
+        return self.get_instance()
+
+    def get_message_for_subscriber(self, subscription, subscriber=None):
+        question = self.get_question_from_instance()
+        return self.get_event_subscriptions()[subscription]['MESSAGE'].format(
+            question_name=question.name,
+            current_user=self.get_current_user_name(),
+            team_name=question.team.name
+        )
+
+    def get_data_for_subscriber(self, subscription, subscriber=None):
+        question = self.get_question_from_instance()
+        user = self.get_current_user()  # type:ArchTeamsQnaUser
+        return {
+            'log': {
+                'message': self.get_event_subscriptions()[subscription]['MESSAGE'],
+                'params': {
+                    'team_id': question.team_id,
+                    'question_id': question.id,
+                    'question_name': question.name,
+                    'current_user': self.get_current_user_name(),
+                    'current_user_data': {
+                        'id': user.id,
+                        'avatar': user.avatar,
+                        'rating': user.rating(),
+                        'full_name': user.full_name,
+                    },
+                    'team_name': question.team.name
+                }
+            }
+        }
 
     def process_signal(self):
         subscriptions = self.get_event_subscriptions()
