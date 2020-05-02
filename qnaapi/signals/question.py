@@ -35,6 +35,14 @@ class QuestionLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
     def post_reset_down_vote(instance, **kwargs):
         QuestionLogSignalReceiver.process(events.EVENTS['RESET_DOWN_VOTE_QUESTION'], instance, **kwargs)
 
+    @staticmethod
+    def post_answer_accepted(instance, **kwargs):
+        QuestionLogSignalReceiver.process(events.EVENTS['ACCEPTED_ANSWER'], instance, **kwargs)
+
+    @staticmethod
+    def post_answer_unaccepted(instance, **kwargs):
+        QuestionLogSignalReceiver.process(events.EVENTS['UNACCEPTED_ANSWER'], instance, **kwargs)
+
     def get_message_for_subscriber(self, subscription, subscriber=None):
         instance = self.get_instance()
         return self.get_event_subscriptions()[subscription]['MESSAGE'].format(
@@ -49,6 +57,7 @@ class QuestionLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
             'log': {
                 'message': self.get_event_subscriptions()[subscription]['MESSAGE'],
                 'params': {
+                    'question_id': instance.id,
                     'question_name': instance.name,
                     'current_user': self.get_current_user_name(),
                     'team_name': instance.team.name
@@ -68,6 +77,13 @@ class QuestionLogSignalReceiver(TeamsQnAModelLogSignalReceiver):
             subscriber_entities.append(self.get_current_user())
         elif subscription == events.SUBSCRIPTIONS[events.QUESTION_OWNER]:
             subscriber_entities.append(question.owner)
+        elif subscription == events.SUBSCRIPTIONS[events.ACCEPTED_ANSWER_OWNER]:
+            if question.accepted_answer:
+                subscriber_entities.append(question.accepted_answer.owner)
+            else:
+                previous_accepted_answer_owner = self.get_options()['previous_accepted_answer_owner']
+                if previous_accepted_answer_owner:
+                    subscriber_entities.append(previous_accepted_answer_owner)
         elif subscription == events.SUBSCRIPTIONS[events.ANSWERED_USER]:
             answers = question.answer_set.exclude(owner_id=question.owner_id).distinct('owner_id')
             for answer in answers:  # type: Answer

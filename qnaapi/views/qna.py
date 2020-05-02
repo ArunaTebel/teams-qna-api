@@ -9,7 +9,7 @@ from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerCo
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
 from qnaapi.signals.qna import post_question_create, post_question_update, post_question_down_vote, \
-    post_question_up_vote
+    post_question_up_vote, post_answer_create, post_answer_update
 from qnaapi.utils import vote_utils, answer_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
@@ -228,7 +228,7 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         question = get_object_or_404(Question, pk=answer.question_id)
         if not is_answer_accessible(request.user, pk) or question.owner_id != self.request.user.archteamsqnauser.id:
             raise PermissionDenied()
-        answer_util.accept(question, int(pk))
+        answer_util.accept(question, int(pk), self.request.user.archteamsqnauser)
         return super(AnswerViewSet, self).retrieve(request)
 
     def create(self, request, *args, **kwargs):
@@ -237,11 +237,18 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         return super(AnswerViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.archteamsqnauser)
+        answer = serializer.save(owner=self.request.user.archteamsqnauser)
+        if answer:
+            post_answer_create.send(sender=self.__class__, instance=answer, user=self.request.user.archteamsqnauser)
 
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
         return super(AnswerViewSet, self).update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        answer = serializer.save()
+        if answer:
+            post_answer_update.send(sender=self.__class__, instance=answer, user=self.request.user.archteamsqnauser)
 
 
 class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
