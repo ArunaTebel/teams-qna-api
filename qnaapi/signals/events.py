@@ -31,7 +31,7 @@ EVENTS = {
             SUBSCRIPTIONS[GLOBAL]: {'MESSAGE': "{current_user} asked a new question '{question_name}' in {team_name}"},
             SUBSCRIPTIONS[TEAM]: {'MESSAGE': "{current_user} asked a new question '{question_name}'"},
             SUBSCRIPTIONS[CURRENT_USER]: {'MESSAGE': "You asked a new question '{question_name}'"},
-            SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} made changes to the question"},
+            SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} asked the question"},
         }
     },
     'UPDATE_QUESTION': {
@@ -232,6 +232,86 @@ EVENTS = {
                 'MESSAGE': "{current_user} reset the down vote for your answer to the question '{question_name}'"
             },
             SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} reset the down vote for an answer to the question"},
+        }
+    },
+    'NEW_QUESTION_COMMENT': {
+        'TYPE': 'QUESTION COMMENT ADDED',
+        'SUBSCRIPTIONS': {
+            SUBSCRIPTIONS[GLOBAL]: {
+                'MESSAGE': "{current_user} commented on the question '{question_name}' in {team_name}"
+            },
+            SUBSCRIPTIONS[TEAM]: {'MESSAGE': "{current_user} commented on the question '{question_name}'"},
+            SUBSCRIPTIONS[CURRENT_USER]: {'MESSAGE': "You commented on the question '{question_name}'"},
+            SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} commented on the question"},
+            SUBSCRIPTIONS[QUESTION_OWNER]: {'MESSAGE': "{current_user} commented on your question '{question_name}'"},
+            SUBSCRIPTIONS[QUESTION_COMMENTED_USER]: {
+                'MESSAGE': "{current_user} commented on the question '{question_name}' which you also have commented"
+            },
+        }
+    },
+    'UPDATE_QUESTION_COMMENT': {
+        'TYPE': 'QUESTION COMMENT UPDATED',
+        'SUBSCRIPTIONS': {
+            SUBSCRIPTIONS[GLOBAL]: {
+                'MESSAGE': "{current_user} made changes to a comment on the question '{question_name}' in {team_name}"
+            },
+            SUBSCRIPTIONS[TEAM]: {
+                'MESSAGE': "{current_user} made changes to a comment on the question '{question_name}'"
+            },
+            SUBSCRIPTIONS[CURRENT_USER]: {'MESSAGE': "You made changes to a comment on the question '{question_name}'"},
+            SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} made changes to a comment on the question"},
+            SUBSCRIPTIONS[QUESTION_OWNER]: {
+                'MESSAGE': "{current_user} made changes to a comment on your question '{question_name}'"
+            },
+            SUBSCRIPTIONS[QUESTION_COMMENTED_USER]: {
+                'MESSAGE': "{current_user} made changes to a comment on the question '{question_name}' which you also have commented"
+            },
+        }
+    },
+    'NEW_ANSWER_COMMENT': {
+        'TYPE': 'ANSWER COMMENT ADDED',
+        'SUBSCRIPTIONS': {
+            SUBSCRIPTIONS[GLOBAL]: {
+                'MESSAGE': "{current_user} commented on an answer to the '{question_name}' in {team_name}"
+            },
+            SUBSCRIPTIONS[TEAM]: {'MESSAGE': "{current_user} commented on an answer to the question '{question_name}'"},
+            SUBSCRIPTIONS[CURRENT_USER]: {'MESSAGE': "You commented on an answer to the question '{question_name}'"},
+            SUBSCRIPTIONS[QUESTION]: {'MESSAGE': "{current_user} commented on an answer to the question"},
+            SUBSCRIPTIONS[QUESTION_OWNER]: {
+                'MESSAGE': "{current_user} commented on an answer to your question '{question_name}'"
+            },
+            SUBSCRIPTIONS[ANSWER_OWNER]: {
+                'MESSAGE': "{current_user} commented on your answer to the question '{question_name}'"
+            },
+            SUBSCRIPTIONS[ANSWER_COMMENTED_USER]: {
+                'MESSAGE': "{current_user} commented on an answer to the question '{question_name}' which you also have commented"
+            },
+        }
+    },
+    'UPDATE_ANSWER_COMMENT': {
+        'TYPE': 'ANSWER COMMENT UPDATED',
+        'SUBSCRIPTIONS': {
+            SUBSCRIPTIONS[GLOBAL]: {
+                'MESSAGE': "{current_user} made changes to a comment on an answer to the question '{question_name}' in {team_name}"
+            },
+            SUBSCRIPTIONS[TEAM]: {
+                'MESSAGE': "{current_user} made changes to a comment on an answer to the question '{question_name}'"
+            },
+            SUBSCRIPTIONS[CURRENT_USER]: {
+                'MESSAGE': "You made changes to a comment on an answer to the question '{question_name}'"
+            },
+            SUBSCRIPTIONS[QUESTION]: {
+                'MESSAGE': "{current_user} made changes to a comment on an answer to the question"
+            },
+            SUBSCRIPTIONS[QUESTION_OWNER]: {
+                'MESSAGE': "{current_user} made changes to a comment on an answer to your question '{question_name}'"
+            },
+            SUBSCRIPTIONS[ANSWER_OWNER]: {
+                'MESSAGE': "{current_user} made changes to a comment on your answer to the question '{question_name}'"
+            },
+            SUBSCRIPTIONS[ANSWER_COMMENTED_USER]: {
+                'MESSAGE': "{current_user} made changes to a comment on an answer to the question '{question_name}' which you also have commented"
+            },
         }
     },
 }

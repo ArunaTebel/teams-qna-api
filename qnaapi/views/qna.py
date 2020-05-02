@@ -9,7 +9,8 @@ from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerCo
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer
 from qnaapi.signals.qna import post_question_create, post_question_update, post_question_down_vote, \
-    post_question_up_vote, post_answer_create, post_answer_update
+    post_question_up_vote, post_answer_create, post_answer_update, post_question_comment_create, \
+    post_question_comment_update, post_answer_comment_create, post_answer_comment_update
 from qnaapi.utils import vote_utils, answer_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response
@@ -261,11 +262,21 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
         return super(QuestionCommentViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.archteamsqnauser, question_id=self.request.data['question'])
+        question_comment = serializer.save(owner=self.request.user.archteamsqnauser,
+                                           question_id=self.request.data['question'])
+        if question_comment:
+            post_question_comment_create.send(sender=self.__class__, instance=question_comment,
+                                              user=self.request.user.archteamsqnauser)
 
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
         return super(QuestionCommentViewSet, self).update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        question_comment = serializer.save()
+        if question_comment:
+            post_question_comment_update.send(sender=self.__class__, instance=question_comment,
+                                              user=self.request.user.archteamsqnauser)
 
 
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -278,8 +289,18 @@ class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
         return super(AnswerCommentViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.archteamsqnauser, answer_id=self.request.data['answer'])
+        answer_comment = serializer.save(owner=self.request.user.archteamsqnauser,
+                                         answer_id=self.request.data['answer'])
+        if answer_comment:
+            post_answer_comment_create.send(sender=self.__class__, instance=answer_comment,
+                                            user=self.request.user.archteamsqnauser)
 
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
         return super(AnswerCommentViewSet, self).update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        answer_comment = serializer.save()
+        if answer_comment:
+            post_answer_comment_update.send(sender=self.__class__, instance=answer_comment,
+                                            user=self.request.user.archteamsqnauser)

@@ -20,3 +20,11 @@ post_answer_up_vote = ModelSignal(providing_args=["instance", ], )
 post_answer_reset_up_vote = ModelSignal(providing_args=["instance", ], )
 post_answer_down_vote = ModelSignal(providing_args=["instance", ], )
 post_answer_reset_down_vote = ModelSignal(providing_args=["instance", ], )
+
+# QuestionComment related signals
+post_question_comment_create = ModelSignal(providing_args=["instance", ], )
+post_question_comment_update = ModelSignal(providing_args=["instance", ], )
+
+# AnswerComment related signals
+post_answer_comment_create = ModelSignal(providing_args=["instance", ], )
+post_answer_comment_update = ModelSignal(providing_args=["instance", ], )
