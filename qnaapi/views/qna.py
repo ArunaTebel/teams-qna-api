@@ -211,7 +211,7 @@ class ArchTeamsQnaUserViewSet(ModelViewSet):
     @action(detail=True, url_path='activity-logs')
     def activity_logs(self, request, pk):
         """
-        Returns the list of comments of the answer given by the pk
+        Returns the list of activity logs of the user in the requested type
         :param request:
         :param pk:
         :return:
@@ -223,6 +223,20 @@ class ArchTeamsQnaUserViewSet(ModelViewSet):
 
         return limit_offset_paginated_response(self, user_util.get_user_activity_logs(pk, target_type),
                                                ActivityLogSerializer, request)
+
+    @action(detail=True, )
+    def stats(self, request, pk):
+        """
+        Returns the stats of the user
+        :param request:
+        :param pk:
+        :return:
+        """
+
+        if int(request.user.archteamsqnauser.id) != int(pk):
+            raise PermissionDenied()
+        user = get_object_or_404(ArchTeamsQnaUser, pk=pk)
+        return Response(user_util.get_user_stats(user))
 
 
 class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
