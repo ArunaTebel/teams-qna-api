@@ -217,7 +217,7 @@ class ArchTeamsQnaUserViewSet(ModelViewSet):
         :return:
         """
         target_type = request.GET.get('log_target', 'ALL')
-        get_object_or_404(Question, pk=pk)
+        get_object_or_404(ArchTeamsQnaUser, pk=pk)
         if user_util.is_restricted(target_type, request.user.archteamsqnauser.id, pk):
             raise PermissionDenied()
 
