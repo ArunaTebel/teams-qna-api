@@ -1,4 +1,4 @@
-from qnaapi.models import AnswerComment, Answer
+from qnaapi.models import AnswerComment, Answer, ArchTeamsQnaUser
 from qnaapi.serializers import QuestionSerializer
 from qnaapi.utils.question_util import is_question_accessible
 
@@ -40,3 +40,13 @@ def accept(question, answer_id, user):
                                              previous_accepted_answer_owner=previous_accepted_answer_owner)
     else:
         post_question_answer_accepted.send(sender=None, instance=question, user=user)
+
+
+def get_user_answers(user):
+    """
+
+    :param user:
+    :type user: ArchTeamsQnaUser
+    :return:
+    """
+    return user.answer_set.all()

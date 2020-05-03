@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from qnaapi.serializers import UserSerializer
+from qnaapi.serializers import UserSerializer, ArchTeamsQnaUserSerializer
 
 
 class CurrentUser(APIView):
@@ -11,5 +11,5 @@ class CurrentUser(APIView):
     """
 
     def get(self, request, format=None):
-        serializer = UserSerializer(request.user, context={'request': request})
+        serializer = ArchTeamsQnaUserSerializer(request.user.archteamsqnauser, context={'request': request})
         return Response(serializer.data)

@@ -3,13 +3,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote
+from qnaapi.models import Team, Question, Tag, Answer, QuestionComment, AnswerComment, QuestionVote, AnswerVote, \
+    ArchTeamsQnaUser
 from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer, AnswerSerializer, \
     QuestionCommentSerializer, AnswerCommentSerializer, QuestionVoteSerializer, AnswerVoteSerializer, \
-    ActivityLogSerializer
+    ActivityLogSerializer, ArchTeamsQnaUserSerializer
 from qnaapi.signals.qna import post_question_create, post_question_update, post_answer_create, post_answer_update, \
     post_question_comment_create, post_question_comment_update, post_answer_comment_create, post_answer_comment_update
-from qnaapi.utils import vote_utils, answer_util
+from qnaapi.utils import vote_utils, answer_util, user_util, question_util, question_comment_util, answer_comment_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response, limit_offset_paginated_response
 from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview, \
@@ -180,10 +181,48 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
         if question:
             post_question_update.send(sender=self.__class__, instance=question, user=self.request.user.archteamsqnauser)
 
+    @action(detail=False, url_path='my-questions')
+    def my_questions(self, request):
+        """
+        Returns the list of questions, the logged in user has asked
+        :param request:
+        :return:
+        """
+        if request.user:
+            return limit_offset_paginated_response(
+                self,
+                question_util.get_user_questions(request.user.archteamsqnauser),
+                self.get_serializer_class(),
+                request
+            )
+        else:
+            raise PermissionDenied()
+
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+
+class ArchTeamsQnaUserViewSet(ModelViewSet):
+    queryset = ArchTeamsQnaUser.objects.all()
+    serializer_class = ArchTeamsQnaUserSerializer
+
+    @action(detail=True, url_path='activity-logs')
+    def activity_logs(self, request, pk):
+        """
+        Returns the list of comments of the answer given by the pk
+        :param request:
+        :param pk:
+        :return:
+        """
+        target_type = request.GET.get('log_target', 'ALL')
+        get_object_or_404(Question, pk=pk)
+        if user_util.is_restricted(target_type, request.user.archteamsqnauser.id, pk):
+            raise PermissionDenied()
+
+        return limit_offset_paginated_response(self, user_util.get_user_activity_logs(pk, target_type),
+                                               ActivityLogSerializer, request)
 
 
 class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
@@ -262,6 +301,23 @@ class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
         if answer:
             post_answer_update.send(sender=self.__class__, instance=answer, user=self.request.user.archteamsqnauser)
 
+    @action(detail=False, url_path='my-answers')
+    def my_answers(self, request):
+        """
+        Returns the list of answers, the logged in user has given
+        :param request:
+        :return:
+        """
+        if request.user:
+            return limit_offset_paginated_response(
+                self,
+                answer_util.get_user_answers(request.user.archteamsqnauser),
+                self.get_serializer_class(),
+                request
+            )
+        else:
+            raise PermissionDenied()
+
 
 class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = QuestionComment.objects.all()
@@ -289,6 +345,23 @@ class QuestionCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
             post_question_comment_update.send(sender=self.__class__, instance=question_comment,
                                               user=self.request.user.archteamsqnauser)
 
+    @action(detail=False, url_path='my-comments')
+    def my_comments(self, request):
+        """
+        Returns the list of question comments, the logged in user has put
+        :param request:
+        :return:
+        """
+        if request.user:
+            return limit_offset_paginated_response(
+                self,
+                question_comment_util.get_user_question_comments(request.user.archteamsqnauser),
+                self.get_serializer_class(),
+                request
+            )
+        else:
+            raise PermissionDenied()
+
 
 class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
     queryset = AnswerComment.objects.all()
@@ -315,3 +388,20 @@ class AnswerCommentViewSet(ModelWithOwnerLoggedInCreateMixin):
         if answer_comment:
             post_answer_comment_update.send(sender=self.__class__, instance=answer_comment,
                                             user=self.request.user.archteamsqnauser)
+
+    @action(detail=False, url_path='my-comments')
+    def my_comments(self, request):
+        """
+        Returns the list of answer comments, the logged in user has put
+        :param request:
+        :return:
+        """
+        if request.user:
+            return limit_offset_paginated_response(
+                self,
+                answer_comment_util.get_user_answer_comments(request.user.archteamsqnauser),
+                self.get_serializer_class(),
+                request
+            )
+        else:
+            raise PermissionDenied()

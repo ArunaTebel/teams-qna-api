@@ -1,7 +1,7 @@
 import papertrail
 
-from qnaapi.models import Answer, QuestionComment, Question, QuestionVote
-from qnaapi.serializers import QuestionViewSerializer, QuestionVoteSerializer
+from qnaapi.models import Answer, QuestionComment, Question, ArchTeamsQnaUser
+from qnaapi.serializers import QuestionViewSerializer
 from qnaapi.utils.team_util import is_user_in_team
 
 
@@ -34,3 +34,13 @@ def upview(question_id, user_id):
     serializer = QuestionViewSerializer(data={'question': question_id, 'viewer': user_id})
     serializer.is_valid(raise_exception=True)
     serializer.save()
+
+
+def get_user_questions(user):
+    """
+
+    :param user:
+    :type user: ArchTeamsQnaUser
+    :return:
+    """
+    return user.question_set.all()
