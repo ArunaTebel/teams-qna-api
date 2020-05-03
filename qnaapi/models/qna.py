@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Sum
 
 from qnaapi.utils.vote_utils import VOTE_TYPES, UP, DOWN
 
@@ -38,6 +37,9 @@ class ArchTeamsQnaUser(models.Model):
         accepted_answers = Question.objects.filter(accepted_answer__owner_id=self.id).count()
         return (question_up_votes * 15 + answer_up_votes * 5 + accepted_answers * 20) - (
                 question_down_votes * 10 + answer_down_votes * 3)
+
+    def username(self):
+        return self.user.username
 
 
 class Tag(models.Model):
@@ -118,6 +120,12 @@ class Answer(Comment):
     def down_votes(self):
         return self.answervote_set.filter(vote_type=DOWN).count()
 
+    def team_id(self):
+        return self.question.team_id
+
+    def question_name(self):
+        return self.question.name
+
     def __str__(self):
         return (self.content[:50] + '..') if len(self.content) > 50 else self.content
 
@@ -135,12 +143,30 @@ class AnswerVote(models.Model):
 class QuestionComment(Comment):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
+    def team_id(self):
+        return self.question.team_id
+
+    def question_id(self):
+        return self.question.id
+
+    def question_name(self):
+        return self.question.name
+
     def __str__(self):
         return self.content
 
 
 class AnswerComment(Comment):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+
+    def team_id(self):
+        return self.answer.question.team_id
+
+    def question_id(self):
+        return self.answer.question.id
+
+    def question_name(self):
+        return self.answer.question.name
 
     def __str__(self):
         return self.content

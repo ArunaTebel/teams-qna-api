@@ -1,7 +1,8 @@
+import papertrail
 from django.contrib.auth.models import User
 from django.db.models import Q, Count
 
-from qnaapi.models import Question, Tag
+from qnaapi.models import Question, Tag, Team
 
 
 def is_user_in_team(user, team_id):
@@ -44,3 +45,12 @@ def get_team_questions(team_id, filter_params, order_by='-created_at'):
 
 def get_team_tags(team_id):
     return Tag.objects.filter(team=team_id)
+
+
+def get_team_activity_logs(team_id):
+    """
+    Returns the Activity Logs applicable for the given team
+    :param team_id:
+    :return:
+    """
+    return papertrail.related_to(TEAM=Team.objects.get(pk=team_id))

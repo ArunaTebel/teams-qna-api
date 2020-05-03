@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'oauth2_provider',
-    'qnaapi',
+    'papertrail',
+    'qnaapi.apps.QnaapiConfig',
 ]
 
 MIDDLEWARE = [

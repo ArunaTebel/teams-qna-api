@@ -1,3 +1,4 @@
+from papertrail.models import Entry
 from rest_framework import serializers
 from qnaapi.models import Team, Tag, Question, Answer, QuestionComment, AnswerComment, ArchTeamsQnaUser, QuestionView, \
     QuestionVote, AnswerVote
@@ -13,7 +14,7 @@ class TeamSerializer(serializers.ModelSerializer):
 class ArchTeamsQnaUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArchTeamsQnaUser
-        fields = ['id', 'full_name', 'avatar', 'created_at', 'updated_at', 'user', 'teams', 'rating']
+        fields = ['id', 'full_name', 'avatar', 'created_at', 'updated_at', 'user', 'teams', 'rating', 'username']
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -63,8 +64,9 @@ class AnswerSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.
 
     class Meta:
         model = Answer
-        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
-                  'current_user_vote_type', 'can_read', 'can_create', 'can_update', 'can_delete', 'is_owner']
+        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'team_id', 'question_name',
+                  'created_at', 'updated_at', 'current_user_vote_type', 'can_read', 'can_create', 'can_update',
+                  'can_delete', 'is_owner']
 
 
 class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
@@ -73,8 +75,9 @@ class QuestionCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, ser
 
     class Meta:
         model = QuestionComment
-        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at',
-                  'can_read', 'can_create', 'can_update', 'can_delete', 'is_owner']
+        fields = ['id', 'content', 'question', 'up_votes', 'down_votes', 'owner', 'team_id', 'question_name',
+                  'question_id', 'created_at', 'updated_at', 'can_read', 'can_create', 'can_update', 'can_delete',
+                  'is_owner']
 
 
 class AnswerCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, serializers.ModelSerializer):
@@ -82,8 +85,9 @@ class AnswerCommentSerializer(ArchTeamsQnAModelPermissionsSerializerMixin, seria
 
     class Meta:
         model = AnswerComment
-        fields = ['id', 'content', 'answer', 'up_votes', 'down_votes', 'owner', 'created_at', 'updated_at', 'can_read',
-                  'can_create', 'can_update', 'can_delete', 'is_owner']
+        fields = ['id', 'content', 'answer', 'up_votes', 'down_votes', 'owner', 'team_id', 'question_name',
+                  'question_id', 'created_at', 'updated_at', 'can_read', 'can_create', 'can_update', 'can_delete',
+                  'is_owner']
 
 
 class QuestionViewSerializer(serializers.ModelSerializer):
@@ -101,4 +105,10 @@ class QuestionVoteSerializer(serializers.ModelSerializer):
 class AnswerVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnswerVote
+        fields = '__all__'
+
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
         fields = '__all__'

@@ -1,5 +1,7 @@
-from qnaapi.models import Answer, QuestionComment, Question, QuestionVote
-from qnaapi.serializers import QuestionViewSerializer, QuestionVoteSerializer
+import papertrail
+
+from qnaapi.models import Answer, QuestionComment, Question, ArchTeamsQnaUser
+from qnaapi.serializers import QuestionViewSerializer
 from qnaapi.utils.team_util import is_user_in_team
 
 
@@ -9,6 +11,10 @@ def get_question_answers(question_id, order_by='-created_at'):
 
 def get_question_comments(question_id, order_by='-created_at'):
     return QuestionComment.objects.filter(question=question_id).order_by(order_by)
+
+
+def get_question_activity_logs(question_id, order_by='-created_at'):
+    return papertrail.related_to(QUESTION=Question.objects.get(pk=question_id))
 
 
 def is_question_accessible(user, question_id):
@@ -28,3 +34,13 @@ def upview(question_id, user_id):
     serializer = QuestionViewSerializer(data={'question': question_id, 'viewer': user_id})
     serializer.is_valid(raise_exception=True)
     serializer.save()
+
+
+def get_user_questions(user):
+    """
+
+    :param user:
+    :type user: ArchTeamsQnaUser
+    :return:
+    """
+    return user.question_set.all()
