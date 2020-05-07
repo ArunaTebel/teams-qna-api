@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from qnaapi.utils.vote_utils import VOTE_TYPES, UP, DOWN
@@ -18,11 +19,27 @@ class Team(models.Model):
         return self.archteamsqnauser_set.count()
 
 
+def default_user_avatar():
+    return {
+        "topType": "NoHair",
+        "accessoriesType": "Blank",
+        "hairColor": "Black",
+        "facialHairType": "Blank",
+        "facialHairColor": "Black",
+        "clotheType": "BlazerShirt",
+        "clotheColor": "Black",
+        "eyeType": "Default",
+        "eyebrowType": "Default",
+        "mouthType": "Default",
+        "skinColor": "Tanned"
+    }
+
+
 class ArchTeamsQnaUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     teams = models.ManyToManyField(Team)
     full_name = models.CharField(max_length=250, blank=False, null=False)
-    avatar = models.CharField(max_length=50, blank=True, null=True)
+    avatar = JSONField(blank=True, null=True, default=default_user_avatar)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -58,7 +75,7 @@ class Question(models.Model):
     content = models.TextField(max_length=65000)
     owner = models.ForeignKey(ArchTeamsQnaUser, on_delete=models.SET_NULL, null=True, blank=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, blank=True)
     accepted_answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True,
                                         related_name='accepted_for_question')
     created_at = models.DateTimeField(auto_now_add=True)

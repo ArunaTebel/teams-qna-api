@@ -165,6 +165,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
     def create(self, request, *args, **kwargs):
         if not is_user_in_team(request.user, request.data['team']):
             raise PermissionDenied()
+
+        print(self.request.data)
         return super(QuestionViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -237,6 +239,12 @@ class ArchTeamsQnaUserViewSet(ModelViewSet):
             raise PermissionDenied()
         user = get_object_or_404(ArchTeamsQnaUser, pk=pk)
         return Response(user_util.get_user_stats(user))
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if int(request.user.archteamsqnauser.id) != int(user.id):
+            raise PermissionDenied()
+        return super(ArchTeamsQnaUserViewSet, self).update(request, *args, **kwargs)
 
 
 class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
