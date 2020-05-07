@@ -10,7 +10,8 @@ from qnaapi.serializers import TeamSerializer, QuestionSerializer, TagSerializer
     ActivityLogSerializer, ArchTeamsQnaUserSerializer
 from qnaapi.signals.qna import post_question_create, post_question_update, post_answer_create, post_answer_update, \
     post_question_comment_create, post_question_comment_update, post_answer_comment_create, post_answer_comment_update
-from qnaapi.utils import vote_utils, answer_util, user_util, question_util, question_comment_util, answer_comment_util
+from qnaapi.utils import vote_utils, answer_util, user_util, question_util, question_comment_util, answer_comment_util, \
+    tag_util
 from qnaapi.utils.answer_util import get_answer_comments, is_answer_accessible
 from qnaapi.utils.commons import paginated_response, limit_offset_paginated_response
 from qnaapi.utils.question_util import get_question_answers, get_question_comments, is_question_accessible, upview, \
@@ -165,6 +166,8 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
     def create(self, request, *args, **kwargs):
         if not is_user_in_team(request.user, request.data['team']):
             raise PermissionDenied()
+
+        request.data['tags'] = tag_util.create_and_get_tag_ids(request.data['tags'], request.data['team'])
         return super(QuestionViewSet, self).create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
@@ -174,6 +177,7 @@ class QuestionViewSet(ModelWithOwnerLoggedInCreateMixin):
 
     def update(self, request, *args, **kwargs):
         self.restrict_if_obj_not_permitted()
+        request.data['tags'] = tag_util.create_and_get_tag_ids(request.data['tags'], self.get_object().team_id)
         return super(QuestionViewSet, self).update(request, *args, **kwargs)
 
     def perform_update(self, serializer):
@@ -237,6 +241,12 @@ class ArchTeamsQnaUserViewSet(ModelViewSet):
             raise PermissionDenied()
         user = get_object_or_404(ArchTeamsQnaUser, pk=pk)
         return Response(user_util.get_user_stats(user))
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if int(request.user.archteamsqnauser.id) != int(user.id):
+            raise PermissionDenied()
+        return super(ArchTeamsQnaUserViewSet, self).update(request, *args, **kwargs)
 
 
 class AnswerViewSet(ModelWithOwnerLoggedInCreateMixin):
