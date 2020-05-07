@@ -68,6 +68,10 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.name = self.name.upper()
+        super(Tag, self).save(*args, **kwargs)
+
 
 class Question(models.Model):
     name = models.CharField(max_length=300)
