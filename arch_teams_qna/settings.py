@@ -19,15 +19,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%'
+# SECRET_KEY = '%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%'
+SECRET_KEY = os.environ.get("SECRET_KEY", "%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", default=1))
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'arch-teams-qna.herokuapp.com',
-]
+# ALLOWED_HOSTS = [
+#     '127.0.0.1',
+#     'arch-teams-qna.herokuapp.com',
+# ]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "arch-teams-qna.herokuapp.com localhost 127.0.0.1 [::1]").split(" ")
 
 # Application definition
 
@@ -83,12 +86,12 @@ WSGI_APPLICATION = 'arch_teams_qna.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'arch_teams_qna',
-        'USER': 'arch_teams_qna_dev',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
-        'PORT': '',
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.environ.get("SQL_DATABASE", "arch_teams_qna"),
+        "USER": os.environ.get("SQL_USER", "arch_teams_qna_dev"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "1234"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
 
@@ -133,8 +136,12 @@ CORS_ORIGIN_ALLOW_ALL = True  # remove this and setup the proper origins after g
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # The URL to use when referring to static files (where they will be served from)
-STATIC_URL = '/static/'
+# STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MEDIA_URL = "/mediafiles/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
