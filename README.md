@@ -14,17 +14,17 @@ This repository contains the REST API of the Arch|TeamsQnA web application.
        docker-compose -f docker-compose.prod.yml up -d --build
 2. Run the migrations
     
-       docker-compose -f docker-compose.prod.yml exec archteamsweb python manage.py migrate --noinput
+       docker-compose -f docker-compose.prod.yml exec archteamsqnaapiweb python manage.py migrate --noinput
 3. Collect and copy the static files
     
-       docker-compose -f docker-compose.prod.yml exec archteamsweb python manage.py collectstatic --no-input --clear
+       docker-compose -f docker-compose.prod.yml exec archteamsqnaapiweb python manage.py collectstatic --no-input --clear
 #### For development,
 1. Build and up the containers
       
        docker-compose up -d --build
-2. Login to the archteamsweb container,
+2. Login to the archteamsqnaapiweb container,
     
-       docker exec -it arch-teams-qna-api_archteamsweb_1 /bin/ash
+       docker exec -it arch-teams-qna-api_archteamsqnaapiweb_1 /bin/ash
     
 3. Create a superuser
     

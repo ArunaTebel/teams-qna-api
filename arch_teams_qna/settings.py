@@ -20,17 +20,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = '%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%'
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", "%buxcu_2&6hhsf7w+q)2o@)&9q+&2f8xsm5g=)7$q0tjco&h)%")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = int(os.environ.get("DEBUG", default=0))
+DEBUG = int(os.environ.get("DEBUG", default=1))
 
 # ALLOWED_HOSTS = [
 #     '127.0.0.1',
 #     'arch-teams-qna.herokuapp.com',
 # ]
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "arch-teams-qna.herokuapp.com localhost 127.0.0.1 [::1]").split(" ")
 
 # Application definition
 
@@ -86,10 +86,10 @@ WSGI_APPLICATION = 'arch_teams_qna.wsgi.application'
 
 DATABASES = {
     'default': {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.environ.get("SQL_DATABASE", "arch_teams_qna"),
+        "USER": os.environ.get("SQL_USER", "arch_teams_qna_dev"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "1234"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }

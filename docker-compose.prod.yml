@@ -6,11 +6,12 @@ services:
     ports:
       - 1337:80
     depends_on:
-      - archteamsweb
+      - archteamsqnaapiweb
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
-  archteamsweb:
+  archteamsqnaapiweb:
+    image: archeun/teams-qna-api-web:prod
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -24,8 +25,8 @@ services:
     env_file:
       - ./.env.prod
     depends_on:
-      - db
-  db:
+      - archteamsqnaapidb
+  archteamsqnaapidb:
     image: postgres:12.0-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
