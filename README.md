@@ -31,7 +31,7 @@ This repository contains the REST API of the Arch|TeamsQnA web application.
        python manage.py createsuperuser
 4. Codebase is found inside the `/usr/src/app` directory of the container.
 5. Access the application through http://127.0.0.1:8000/
-6, Check logs by executing (on host machine),
+6. Check logs by executing (on host machine),
         
        docker-compose logs -f
     
