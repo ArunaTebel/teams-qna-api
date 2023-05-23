@@ -1,0 +1,14 @@
+{
+    "builds": [
+      {
+        "src": "arch_teams_qna/wsgi.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "arch_teams_qna/wsgi.py"
+      }
+    ]
+}
