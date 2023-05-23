@@ -124,7 +124,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+# USE_TZ = True
 
 CORS_ORIGIN_ALLOW_ALL = True  # remove this and setup the proper origins after going prod
 
