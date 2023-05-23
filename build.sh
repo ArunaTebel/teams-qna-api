@@ -10,3 +10,6 @@ python3.9 manage.py migrate --noinput
 
 echo "Collect Static..."
 python3.9 manage.py collectstatic --noinput --clear
+
+echo "Creating the super user"
+python3.9 manage.py createsuperuser --noinput
