@@ -22,4 +22,4 @@ dj-database-url = "*"
 django-papertrail = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
